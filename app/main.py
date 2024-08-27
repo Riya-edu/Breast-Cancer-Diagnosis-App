@@ -2,6 +2,9 @@ import streamlit as st
 import pickle as pickle
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
+import plotly.express as px
+from sklearn.preprocessing import MinMaxScaler
 
 
 #In real world case we wont be importing the dataset as its vast
@@ -141,12 +144,35 @@ def get_radar_chart(input_data):
     
     return fig
 
+def add_predictions(input_data):
+    model = pickle.load(open("model/model.pkl", "rb"))
+    scaler = pickle.load(open("model/scaler.pkl", "rb"))
+
+    input_array = np.array(list(input_data.values())).reshape(1, -1)
+    
+    input_array_scaled = scaler.transform(input_array)
+
+    prediction = model.predict(input_array_scaled)
+
+    st.subheader("Cell Cluster prediction: ")
+    st.write("The cell cluster is:")
+    if prediction[0] == 0:
+        st.subheader("Benign")
+    else:
+        st.subheader("Malignant")
+
+    st.write("Probability of being Benign: ", model.predict_proba(input_array_scaled)[0][0])
+    st.write("Probability of being Malignant: ", model.predict_proba(input_array_scaled)[0][1])
+    st.write("Disclaimer: This is a demo app can be used for assistance by the medical professional for diagnosis but it should not be used as a substitue for a professional diagnosis.")
+
+
+
 def main():
     #Setting the page configuration for our application
 
     st.set_page_config(
         page_title = "Breast Cancer Predictor",
-        page_icon = ":female-doctor:",
+        page_icon = "👩‍⚕️",
         layout = "wide",
         initial_sidebar_state = "expanded"
     )
@@ -158,13 +184,14 @@ def main():
         st.title("Breast Cancer Predictor")
         st.write("This app helps diagnose breast cancer from your tissue sample.This app predicts using a machine learning model whether a breast mass is benign or malignant based on the measurements it receives from your cytosis lab. You can also update the measurements by hand using the sliders in the sidebar. ")
 
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([4, 2])
 
     with col1:
         radar_chart = get_radar_chart(input_data)
-        st.plotly_chart(radar_chart)
+        st.plotly_chart(radar_chart, use_container_width=True)
+
     with col2:
-        st.write("col2")
+        add_predictions(input_data)
 
 if __name__ == '__main__':
     main()
