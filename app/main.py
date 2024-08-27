@@ -3,8 +3,7 @@ import pickle as pickle
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
-import plotly.express as px
-from sklearn.preprocessing import MinMaxScaler
+
 
 
 #In real world case we wont be importing the dataset as its vast
